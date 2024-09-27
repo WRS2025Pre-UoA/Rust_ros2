@@ -22,12 +22,8 @@ setup(
         'console_scripts': [
             'talker = rust.test_publisher:main',
             'image_publisher = rust.image_publisher:main',  # スクリプトのパスと関数名
-<<<<<<< HEAD
             # 'image_subscriber = rust.image_subscriber:main',
             'rust_subscriber = rust.rust_subscriber:main',
-=======
-            'image_subscriber = rust.image_subscriber:main',
->>>>>>> main
         ],
     },
 )
