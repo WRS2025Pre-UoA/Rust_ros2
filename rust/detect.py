@@ -13,7 +13,9 @@ def resize_func(img):
     # new_height = int(width * aspect_ratio)
 
     # resized_img = cv2.resize(img, (width,new_height),interpolation=cv2.INTER_AREA)
+
     resized_img = cv2.resize(img, (640,480),interpolation=cv2.INTER_AREA)
+
     return resized_img
 
 # 2点間の距離を計算する関数
@@ -28,6 +30,7 @@ def mouseEvents(event, x, y, flags, points_list):
         points_list.append([x, y])
 
 def adapt(img):#赤色をマスクし、大津の二値化を用いて領域けんしゅつ
+
     # img_gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
     # dst_cv = cv2.adaptiveThreshold(img_gray,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,1001,20)
     # cv2.imshow("image",dst_cv)
@@ -61,7 +64,9 @@ def adapt(img):#赤色をマスクし、大津の二値化を用いて領域け�
 
     img = cv2.resize(img,(648,648),interpolation=cv2.INTER_AREA)
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+
     #サビの赤色、濃い赤色などをマスクする
+
     lower_rust = np.array([0, 100, 30])   # 下限値 51 41 28
     upper_rust = np.array([102, 255, 125]) # 上限値
     mask = cv2.inRange(hsv, lower_rust, upper_rust)
@@ -107,15 +112,19 @@ def extract_test_piece(img,points_list):
     cv2.setMouseCallback("Select the 4 points", mouseEvents,points_list)
     # 十分なクリックが行われるまで待機
     while len(points_list) < 4:
+
         key=cv2.waitKey(1)  # 小さな待機時間で処理を継続する
         if key==-1 and cv2.getWindowProperty("Select the 4 points",cv2.WND_PROP_VISIBLE)<1:
             raise ValueError("Closed Window!")
+
 
     cv2.destroyAllWindows()
 
     # クリックした4つの点を取得
     points = np.array(points_list, dtype="float32")
+
     # print("Selected points:", points)
+
 
     # 最も長い辺の長さを計算
     lengths = [dist(points[i], points[(i+1) % 4]) for i in range(4)]
@@ -133,6 +142,7 @@ def extract_test_piece(img,points_list):
 
     # 射影変換を適用
     warped = cv2.warpPerspective(img, M, output_size)
+
     
     return warped
 

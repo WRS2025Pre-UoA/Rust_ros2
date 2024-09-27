@@ -9,6 +9,7 @@ from pathlib import Path
 import sys
 sys.path.append(str(Path(__file__).resolve().parent))
 import detect
+
 # キー入力を受け付けて処理を開始したい 好きなタイミングで行う
 class ImageSubscriber(Node):
     def __init__(self):
@@ -37,9 +38,6 @@ class ImageSubscriber(Node):
             print(area)
             # 処理後、ノードをシャットダウンするか、トピックからの購読を解除
             self.get_logger().info('Image processed successfully, shutting down node.')
-            
-
-            
 
         except CvBridgeError as e:
             self.get_logger().error(f'Failed to convert image: {e}')
