@@ -13,7 +13,9 @@ def resize_func(img):
     # new_height = int(width * aspect_ratio)
 
     # resized_img = cv2.resize(img, (width,new_height),interpolation=cv2.INTER_AREA)
-    resized_img = cv2.resize(img, (1280,720),interpolation=cv2.INTER_AREA)
+
+    resized_img = cv2.resize(img, (640,480),interpolation=cv2.INTER_AREA)
+
     return resized_img
 
 # 2点間の距離を計算する関数
@@ -27,7 +29,8 @@ def mouseEvents(event, x, y, flags, points_list):
         print(x, y)
         points_list.append([x, y])
 
-def adapt(img):
+def adapt(img):#赤色をマスクし、大津の二値化を用いて領域けんしゅつ
+
     # img_gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
     # dst_cv = cv2.adaptiveThreshold(img_gray,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,1001,20)
     # cv2.imshow("image",dst_cv)
@@ -61,7 +64,9 @@ def adapt(img):
 
     img = cv2.resize(img,(648,648),interpolation=cv2.INTER_AREA)
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-#サビの赤色、濃い赤色などをマスクする
+
+    #サビの赤色、濃い赤色などをマスクする
+
     lower_rust = np.array([0, 100, 30])   # 下限値 51 41 28
     upper_rust = np.array([102, 255, 125]) # 上限値
     mask = cv2.inRange(hsv, lower_rust, upper_rust)
@@ -107,13 +112,19 @@ def extract_test_piece(img,points_list):
     cv2.setMouseCallback("Select the 4 points", mouseEvents,points_list)
     # 十分なクリックが行われるまで待機
     while len(points_list) < 4:
-        cv2.waitKey(1)  # 小さな待機時間で処理を継続する
+
+        key=cv2.waitKey(1)  # 小さな待機時間で処理を継続する
+        if key==-1 and cv2.getWindowProperty("Select the 4 points",cv2.WND_PROP_VISIBLE)<1:
+            raise ValueError("Closed Window!")
+
 
     cv2.destroyAllWindows()
 
     # クリックした4つの点を取得
     points = np.array(points_list, dtype="float32")
-    print("Selected points:", points)
+
+    # print("Selected points:", points)
+
 
     # 最も長い辺の長さを計算
     lengths = [dist(points[i], points[(i+1) % 4]) for i in range(4)]
@@ -131,25 +142,77 @@ def extract_test_piece(img,points_list):
 
     # 射影変換を適用
     warped = cv2.warpPerspective(img, M, output_size)
+
+    
     return warped
 
+def create_trackbar(warped_img):
+    cv2.namedWindow('Warped Image')
+    # トラックバーを作成
+    cv2.createTrackbar('Brightness', 'Warped Image', 100, 200, lambda x: None)
+    cv2.createTrackbar('Contrast', 'Warped Image', 100, 300, lambda x: None)
+    # cv2.createTrackbar('Canny Thresh 1', 'Warped Image', 100, 500, lambda x: None)
+    # cv2.createTrackbar('Canny Thresh 2', 'Warped Image', 200, 500, lambda x: None)
+    # cv2.createTrackbar('Max Line Gap', 'Warped Image', 20, 150, lambda x: None)
+
+    while True:
+        update_image(warped_img)
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('c'):
+            # save_image()  # 引数を渡さずに呼び出す
+            break
+
+    cv2.destroyAllWindows()
+    return current_result_image
+
+def update_image(val):
+    """
+    トラックバーの値に基づいて画像を更新するコールバック関数。
+    """
+    brightness = cv2.getTrackbarPos('Brightness', 'Warped Image') - 100
+    contrast = cv2.getTrackbarPos('Contrast', 'Warped Image') / 100.0
+    # canny_threshold1 = cv2.getTrackbarPos('Canny Thresh 1', 'Warped Image')
+    # canny_threshold2 = cv2.getTrackbarPos('Canny Thresh 2', 'Warped Image')
+    # max_line_gap = cv2.getTrackbarPos('Max Line Gap', 'Warped Image')
+    
+    temp_image = cv2.convertScaleAbs(val, alpha=contrast, beta=brightness)
+    # result_image = detect_and_measure_lines(temp_image.copy(), canny_threshold1, canny_threshold2, max_line_gap, scale=20)
+    
+    # 画像を表示
+    cv2.imshow('Warped Image', temp_image)
+    global current_result_image
+    current_result_image = temp_image
+
+def calc(img):
+    h,w = img.shape[:2]
+    all = h*w
+    white = np.sum(np.all(img == 255,axis=-1))
+    area = (all-white) / all * 100
+    return area
+
+
 def main():
+
+    global new_img
     # 画像を読み込み
     # img = cv2.imread("../PNG_E/Pattern_1/1.5F_Pole/az-30.png")  # 画像のパスを指定
-    img = cv2.imread("../PNG_E/Pattern_1/2F_Wall/az-30.png")  # 画像のパスを指定
+    # img = cv2.imread("/home/ros/ros2_ws/src/rust/PNG_E/Pattern_3/1.5F_Wall/az0.png")
+    img = cv2.imread("/home/ros/ros2_ws/src/rust/PNG_E/az0/P4_az0.png")
+    # img = cv2.imread("../PNG_E/Pattern_1/2F_Wall/az-30.png")  # 画像のパスを指定
     img = resize_func(img)
     points_list = []
+
     new_img=extract_test_piece(img,points_list)
 
-    # 結果を表示
-    cv2.imshow("Warped Image", new_img)
+    N=create_trackbar(new_img)
+    cv2.imshow("Warped1",N)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-    cv2.imwrite("Detect_P1_2FW.png",new_img)
-    # new_img = cv2.imread("Detect_png.png")
-    area,mask=adapt(new_img)
-    print(area)
+    num = calc(N)
+    print(num)
+ 
+
 
 if __name__ == '__main__':
     main()
