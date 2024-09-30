@@ -6,9 +6,7 @@ from cv_bridge import CvBridge,CvBridgeError
 import cv2
 import numpy as np
 from pathlib import Path
-import sys
-sys.path.append(str(Path(__file__).resolve().parent))
-import detect
+from rust import detect
 # キー入力を受け付けて処理を開始したい 好きなタイミングで行う
 class ImageSubscriber(Node):
     def __init__(self):
