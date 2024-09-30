@@ -158,7 +158,7 @@ def create_trackbar(warped_img):
     while True:
         update_image(warped_img)
         key = cv2.waitKey(1) & 0xFF
-        if key == ord('c'):
+        if key != 255:
             # save_image()  # 引数を渡さずに呼び出す
             break
 
