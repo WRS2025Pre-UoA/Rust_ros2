@@ -114,8 +114,8 @@ def extract_test_piece(img,points_list):
     while len(points_list) < 4:
 
         key=cv2.waitKey(1)  # 小さな待機時間で処理を継続する
-        if key==-1 and cv2.getWindowProperty("Select the 4 points",cv2.WND_PROP_VISIBLE)<1:
-            raise ValueError("Closed Window!")
+        # if cv2.getWindowProperty("Select the 4 points",cv2.WND_PROP_VISIBLE)==0:
+        #     raise ValueError("Closed Window!")
 
 
     cv2.destroyAllWindows()
